@@ -54,13 +54,14 @@ const myMiddleware: Middleware = async (req, next, ctx) => {
 
 The library comes with several built-in middlewares. Click on each for detailed documentation:
 
-- **[Request Queue Middleware](./docs/request-queue.md)**: Manages request queues for handling authentication refresh and automatic retry.
-- **[JSON Response Middleware](./docs/json-response.md)**: Parses JSON responses and attaches to `_body` property.
-- **[Extract Body Middleware](./docs/extract-body.md)**: Extracts `_body` from Response and returns it as the final result.
-- **[HTTP Error Middleware](./docs/http-error.md)**: Handles HTTP errors with a simple callback.
-- **[Format Proto Error Middleware](./docs/format-proto-error.md)**: Handles Protobuf and Connect error responses.
-- **[Headers Middleware](./docs/headers.md)**: Add or modify request headers.
-- **[Tag Session Middleware](./docs/tag-session.md)**: Automatically tags requests with metadata based on URL whitelist.
+- **[Auth Refresh Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/auth-refresh.md)**: High-level helpers for handling authentication refresh and automatic retry for both REST and Connect-RPC. **Recommended entry point for auth/session handling.**
+- **[Request Queue Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/request-queue.md)**: Low-level queue engine used internally by auth-refresh. Useful only for advanced/custom flows.
+- **[JSON Response Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/json-response.md)**: Parses JSON responses and attaches to `_body` property.
+- **[Extract Body Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/extract-body.md)**: Extracts `_body` from Response and returns it as the final result.
+- **[HTTP Error Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/http-error.md)**: Handles HTTP errors with a simple callback.
+- **[Format Proto Error Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/format-proto-error.md)**: Handles Protobuf and Connect error responses.
+- **[Headers Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/headers.md)**: Add or modify request headers.
+- **[Tag Session Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/tag-session.md)**: Automatically tags requests with metadata based on URL whitelist.
 
 ## Quick Start
 
@@ -154,7 +155,7 @@ const client = createClient(YourService, transport);
 await client.getUser({ id: "123" });
 ```
 
-> **Note**: Connect-RPC clients cannot pass `_meta` parameters directly due to framework limitations. To add metadata tags to requests (e.g., for use with `requestQueueMiddleware`), use `tagSessionMiddleware` to automatically tag requests based on URL whitelist. See [Tag Session Middleware](./docs/tag-session.md) for details.
+> **Note**: Connect-RPC clients cannot pass `_meta` parameters directly due to framework limitations. To add metadata tags to requests (e.g., for use with `requestQueueMiddleware`), use `tagSessionMiddleware` to automatically tag requests based on URL whitelist. See [Tag Session Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/tag-session.md) for details.
 
 ## Error Handling
 

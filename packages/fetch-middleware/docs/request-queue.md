@@ -2,6 +2,13 @@
 
 The `requestQueueMiddleware` manages request queues for handling authentication refresh and automatic retry. It supports single or multiple queue configurations with **INDEPENDENT QUEUES**. Each config maintains its own queue state to avoid conflicts.
 
+> **Recommended:** For typical auth/session refresh flows, use
+> [`Auth Refresh Middleware`](./auth-refresh.md) instead of wiring
+> `requestQueueMiddleware` directly. The auth-refresh helpers build on
+> this queue engine and encapsulate common patterns (401 + expiry +
+> `_meta` filtering) while still using `requestQueueMiddleware`
+> internally.
+
 When a response matches the trigger condition (e.g., 401 unauthorized), this middleware:
 
 1. Cancels all other pending requests that match **THE SAME config** (unless ignored)
@@ -141,82 +148,26 @@ const transport = createConnectTransport({
 const client = createClient(UserService, transport);
 ```
 
-### Using Presets
+### Recommended: Use Auth Refresh Helpers
 
-The library provides preset helpers for common authentication scenarios:
+For most authentication scenarios, you should not build `RequestQueueOptions`
+directly. Instead, prefer the high-level helpers described in
+[`auth-refresh.md`](./auth-refresh.md):
 
-#### `requestQueueAuthHandleCIAMPreset`
+- `createSessionRefreshMiddleware` (REST)
+- `createConnectSessionRefreshMiddleware` (Connect-RPC)
 
-For CIAM-based authentication with protected endpoint filtering:
+These helpers:
 
-```typescript
-import {
-  requestQueueMiddleware,
-  requestQueueAuthHandleCIAMPreset,
-  tagSessionMiddleware,
-} from "@theplant/fetch-middleware";
+- Configure `queueTrigger` for you (401 + session expiry).
+- Wire the `handler` to your `refreshSession` implementation.
+- Provide sensible defaults for `ignore` / `_meta.isProtected`.
+- Still use `requestQueueMiddleware` under the hood, so all the behavior
+  documented on this page still applies.
 
-const fetchClient = createFetchClient({
-  middlewares: [
-    // Use CIAM preset
-    requestQueueMiddleware(
-      requestQueueAuthHandleCIAMPreset(
-        async (next) => {
-          try {
-            await ciamHandlers.refreshSession();
-            next(true);
-          } catch (error) {
-            next(false);
-          }
-        },
-        { getCIAMState: () => ciamHandlers.getState(), debug: true },
-      ),
-    ),
-  ],
-});
-```
-
-**Features:**
-
-- Triggers on 401 responses for protected requests (`request._meta.isProtected === true`)
-- Triggers on expired sessions (reads `session.expiresAt` from CIAM state)
-- Automatically ignores `/RefreshSession` endpoint to avoid deadlocks
-
-#### `requestQueueAuthHandlePreset`
-
-For simple 401-based authentication:
-
-```typescript
-import {
-  requestQueueMiddleware,
-  requestQueueAuthHandlePreset,
-} from "@theplant/fetch-middleware";
-
-const fetchClient = createFetchClient({
-  middlewares: [
-    requestQueueMiddleware(
-      requestQueueAuthHandlePreset(
-        async (next) => {
-          try {
-            await refreshSession();
-            next(true);
-          } catch (error) {
-            next(false);
-          }
-        },
-        { debug: true },
-      ),
-    ),
-  ],
-});
-```
-
-**Features:**
-
-- Triggers on any 401 response
-- Optionally triggers on expired sessions if `getCIAMState` is provided
-
-> **Real-world Example**: See [qor5-ec-demo](https://github.com/theplant/qor5-ec-demo/blob/main/frontend/src/lib/api/index.ts) for a complete integration example with both CIAM and REST clients.
+Only reach for `requestQueueMiddleware` directly if you have
+non-standard triggering logic or need multiple independent queues
+outside of authentication.
 
 ### Advanced Trigger Logic
 

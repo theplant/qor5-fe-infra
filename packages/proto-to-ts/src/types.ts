@@ -42,9 +42,19 @@ export interface BufModuleInfo {
   modulePath?: string;
 }
 
+export interface MethodInfo {
+  name: string;
+  inputType: string;
+  inputSchema: string;
+  outputType: string;
+  outputSchema: string;
+}
+
 export interface ServiceInfo {
   serviceName: string;
   importPath: string;
+  methods: MethodInfo[];
+  imports: Record<string, string>;
 }
 
 export interface BufGenConfig {

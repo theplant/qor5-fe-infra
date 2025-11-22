@@ -84,6 +84,28 @@ export async function generateFromProto(
     fs.writeFileSync(tempBufConfig, bufGenContent);
     console.log(`   Created temporary buf config`);
 
+    // Step 1.5: Clean output directories to avoid stale files
+    console.log("\n🧹 Step 1.5: Cleaning output directories...");
+    const resolvedCleanOutputDir = path.isAbsolute(outputDir)
+      ? outputDir
+      : path.join(workingDir, outputDir);
+
+    if (fs.existsSync(resolvedCleanOutputDir)) {
+      fs.rmSync(resolvedCleanOutputDir, { recursive: true, force: true });
+      console.log(`   Deleted: ${resolvedCleanOutputDir}`);
+    }
+
+    if (servicesDir) {
+      const resolvedCleanServicesDir = path.isAbsolute(servicesDir)
+        ? servicesDir
+        : path.join(workingDir, servicesDir);
+
+      if (fs.existsSync(resolvedCleanServicesDir)) {
+        fs.rmSync(resolvedCleanServicesDir, { recursive: true, force: true });
+        console.log(`   Deleted: ${resolvedCleanServicesDir}`);
+      }
+    }
+
     // Step 2: Generate Connect-RPC clients from protobuf using buf
     console.log("\n📝 Step 2: Generating Connect-RPC clients from protobuf...");
     console.log(`   Processing ${validation.files!.length} proto file(s)...`);
@@ -213,6 +235,9 @@ export async function generateFromProto(
 
       // Generate top-level index.ts
       const rpcIndexPath = path.join(resolvedRpcServiceDir, "index.ts");
+
+      // Read existing content to merge imports if needed (though template rewrites it)
+      // The template generator now takes care of generating unique exports for all modules
       fs.writeFileSync(rpcIndexPath, generateRpcServiceIndexTemplate(modules));
       console.log(`   ✅ Generated index.ts (${modules.length} modules)`);
       console.log(`   📦 Registered modules: ${modules.join(", ")}`);

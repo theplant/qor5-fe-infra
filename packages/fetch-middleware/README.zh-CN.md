@@ -54,13 +54,14 @@ const myMiddleware: Middleware = async (req, next, ctx) => {
 
 本库包含多个内置中间件。点击下方链接查看详细文档（英文）：
 
-- **[Request Queue Middleware](./docs/request-queue.md)**：管理请求队列以处理认证刷新和自动重试。
-- **[JSON Response Middleware](./docs/json-response.md)**：解析 JSON 响应并附加到 `_body` 属性。
-- **[Extract Body Middleware](./docs/extract-body.md)**：从 Response 中提取 `_body` 并将其作为最终结果返回。
-- **[HTTP Error Middleware](./docs/http-error.md)**：使用简单的回调处理 HTTP 错误。
-- **[Format Proto Error Middleware](./docs/format-proto-error.md)**：处理 Protobuf 和 Connect 错误响应。
-- **[Headers Middleware](./docs/headers.md)**：添加或修改请求头。
-- **[Tag Session Middleware](./docs/tag-session.md)**：根据 URL 白名单自动为请求添加元数据标签。
+- **[Auth Refresh Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/auth-refresh.md)**：高层封装的认证刷新中间件，支持 REST 和 Connect-RPC，**推荐优先使用**。
+- **[Request Queue Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/request-queue.md)**：底层请求队列引擎，被 Auth Refresh 中间件内部使用，适合高级/自定义场景。
+- **[JSON Response Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/json-response.md)**：解析 JSON 响应并附加到 `_body` 属性。
+- **[Extract Body Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/extract-body.md)**：从 Response 中提取 `_body` 并将其作为最终结果返回。
+- **[HTTP Error Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/http-error.md)**：使用简单的回调处理 HTTP 错误。
+- **[Format Proto Error Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/format-proto-error.md)**：处理 Protobuf 和 Connect 错误响应。
+- **[Headers Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/headers.md)**：添加或修改请求头。
+- **[Tag Session Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/tag-session.md)**：根据 URL 白名单自动为请求添加元数据标签。
 
 ## 快速开始
 
@@ -154,7 +155,7 @@ const client = createClient(YourService, transport);
 await client.getUser({ id: "123" });
 ```
 
-> **注意**：Connect-RPC 客户端由于框架限制，无法在调用时直接传递 `_meta` 参数。如需为请求添加元数据标签（例如配合 `requestQueueMiddleware` 使用），请使用 `tagSessionMiddleware` 根据 URL 白名单自动标记。详见 [Tag Session Middleware](./docs/tag-session.md)。
+> **注意**：Connect-RPC 客户端由于框架限制，无法在调用时直接传递 `_meta` 参数。如需为请求添加元数据标签（例如配合 `requestQueueMiddleware` 使用），请使用 `tagSessionMiddleware` 根据 URL 白名单自动标记。详见 [Tag Session Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/tag-session.md)。
 
 ## 错误处理
 

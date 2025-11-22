@@ -155,12 +155,10 @@ export function parseConnectError(err: any) {
   return {
     code: connectErr.code,
     message: connectErr.message,
-    rawMessage: connectErr.rawMessage,
     localizedMessage: connectErr.findDetails(LocalizedMessageSchema)[0]
       ?.message,
     errorInfo: connectErr.findDetails(ErrorInfoSchema)[0],
     badRequest: connectErr.findDetails(BadRequestSchema)[0],
-    validationError: connectErr.findDetails(ValidationErrorSchema)[0],
     cause: connectErr.cause,
   };
 }

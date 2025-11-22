@@ -9,11 +9,7 @@ import type { ProtoGenConfig } from "./types.js";
 import { isValidProtoPath } from "./utils/proto-scanner.js";
 import { loadHistory, addToHistory, formatTimestamp } from "./utils/history.js";
 import { generateFromProto } from "./generator.js";
-import {
-  checkConnectClientExists,
-  generateConnectClientFiles,
-  getRequiredDependencies,
-} from "./utils/setup-helpers.js";
+import { getRequiredDependencies } from "./utils/setup-helpers.js";
 import {
   detectPackageManager,
   checkPackagesInstalled,
@@ -114,77 +110,56 @@ export async function runInteractiveCLI(config: ProtoGenConfig): Promise<void> {
 
   console.log("");
 
-  // Ask about modular structure first
-  const { useModular } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "useModular",
-      message: "Use modular structure for multi-project organization?",
-      default:
-        config.moduleName !== undefined || config.rpcServiceDir !== undefined,
-    },
-  ]);
-
   let moduleName: string | undefined;
   let rpcServiceDir: string | undefined;
   let outputDir: string;
   let servicesDir: string;
 
-  if (useModular) {
-    // Ask for module name
-    const { inputModuleName } = await inquirer.prompt([
-      {
-        type: "input",
-        name: "inputModuleName",
-        message: "Enter module name (e.g., pim, ciam, auth):",
-        default: config.moduleName || "pim",
-        validate: (input: string) => {
-          if (!input) return "Module name cannot be empty";
-          if (!/^[a-z0-9-_]+$/i.test(input))
-            return "Module name should only contain letters, numbers, hyphens, and underscores";
-          return true;
-        },
+  // Ask for module name
+  const { inputModuleName } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "inputModuleName",
+      message: "Enter module name (e.g., pim, ciam, auth):",
+      default: config.moduleName || "pim",
+      validate: (input: string) => {
+        if (!input) return "Module name cannot be empty";
+        if (!/^[a-z0-9-_]+$/i.test(input))
+          return "Module name should only contain letters, numbers, hyphens, and underscores";
+        return true;
       },
-    ]);
+    },
+  ]);
 
-    moduleName = inputModuleName;
+  moduleName = inputModuleName;
 
-    // Ask for RPC service directory
-    const { inputRpcServiceDir } = await inquirer.prompt([
-      {
-        type: "input",
-        name: "inputRpcServiceDir",
-        message:
-          "Enter RPC service root directory (relative to current directory):",
-        default: config.rpcServiceDir || "src/lib/api/rpc-service",
-        validate: (input: string) => {
-          if (!input) return "RPC service directory cannot be empty";
-          if (path.isAbsolute(input)) return "Please enter a relative path";
-          return true;
-        },
+  // Ask for RPC service directory
+  const { inputRpcServiceDir } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "inputRpcServiceDir",
+      message:
+        "Enter RPC service root directory (relative to current directory):",
+      default: config.rpcServiceDir || "src/lib/api/rpc-service",
+      validate: (input: string) => {
+        if (!input) return "RPC service directory cannot be empty";
+        if (path.isAbsolute(input)) return "Please enter a relative path";
+        return true;
       },
-    ]);
+    },
+  ]);
 
-    rpcServiceDir = inputRpcServiceDir;
+  rpcServiceDir = inputRpcServiceDir;
 
-    // Automatically set outputDir and servicesDir under the module
-    outputDir = path.join(rpcServiceDir!, moduleName!, "generated");
-    servicesDir = path.join(rpcServiceDir!, moduleName!, "services");
+  // Automatically set outputDir and servicesDir under the module
+  outputDir = path.join(rpcServiceDir!, moduleName!, "generated");
+  servicesDir = path.join(rpcServiceDir!, moduleName!, "services");
 
-    console.log(`\n📦 Modular Structure:`);
-    console.log(`   Module: ${moduleName}`);
-    console.log(`   RPC Service Dir: ${rpcServiceDir}`);
-    console.log(`   Generated files: ${outputDir}`);
-    console.log(`   Service clients: ${servicesDir}\n`);
-  } else {
-    // Use default flat structure from config
-    outputDir = config.outputDir;
-    servicesDir =
-      config.servicesDir || path.join(config.outputDir, "../services");
-
-    console.log(`\n📂 Output directory: ${outputDir}`);
-    console.log(`📂 Services directory: ${servicesDir}\n`);
-  }
+  console.log(`\n📦 Modular Structure:`);
+  console.log(`   Module: ${moduleName}`);
+  console.log(`   RPC Service Dir: ${rpcServiceDir}`);
+  console.log(`   Generated files: ${outputDir}`);
+  console.log(`   Service clients: ${servicesDir}\n`);
 
   // Confirm before proceeding
   const { confirm } = await inquirer.prompt([
@@ -213,20 +188,7 @@ export async function runInteractiveCLI(config: ProtoGenConfig): Promise<void> {
   // Check if this is first time setup
   const workingDir = process.cwd();
 
-  // For modular structure, skip the early setup check
-  // Step 5 in generator will handle connect-client.ts creation
-  let shouldSetupClient = false;
   let shouldInstallDeps = false;
-  let connectClientExists = true; // Assume it exists for modular structure
-
-  if (!useModular) {
-    // Only check and setup for flat structure
-    const apiDir = path.join(
-      workingDir,
-      config.outputDir.split("/").slice(0, -1).join("/"),
-    );
-    connectClientExists = checkConnectClientExists(apiDir);
-  }
 
   // Always check for missing dependencies
   const deps = getRequiredDependencies();
@@ -241,22 +203,6 @@ export async function runInteractiveCLI(config: ProtoGenConfig): Promise<void> {
     console.log("   Required:", deps.runtime.map((d) => d.name).join(", "));
     console.log("   Installed:", installed.join(", "));
     console.log("   Missing:", missing.map((d) => d.name).join(", "));
-  }
-
-  if (!connectClientExists) {
-    console.log("\n🔧 Setup Options\n");
-
-    const { setupClient } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "setupClient",
-        message:
-          "Generate Connect client files (connect-client.ts, error handlers)?",
-        default: true,
-      },
-    ]);
-
-    shouldSetupClient = setupClient;
   }
 
   // Check and install dependencies if needed (regardless of connect-client.ts existence)
@@ -284,29 +230,6 @@ export async function runInteractiveCLI(config: ProtoGenConfig): Promise<void> {
   if (shouldInstallDeps && missing.length > 0) {
     console.log("\n📦 Installing dependencies...\n");
     await installPackages(workingDir, missing, false);
-  }
-
-  // Execute setup if requested (only for flat structure)
-  if (shouldSetupClient && !useModular) {
-    console.log("\n📝 Setting up Connect client files...\n");
-
-    const apiDir = path.join(
-      workingDir,
-      config.outputDir.split("/").slice(0, -1).join("/"),
-    );
-
-    // Generate client files
-    generateConnectClientFiles(apiDir);
-
-    console.log("\n✅ Connect client setup complete!");
-    console.log("   📝 You can now import from:");
-    console.log(
-      `   - ${path.join(config.outputDir.split("/").slice(0, -1).join("/"), "connect-client")}`,
-    );
-    console.log(
-      `   - ${path.join(config.outputDir.split("/").slice(0, -1).join("/"), "handlers/connect-error-handler")}`,
-    );
-    console.log("");
   }
 
   // Execute the API generation

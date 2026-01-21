@@ -246,7 +246,8 @@ function mergeRequestInit(
   }
 
   const method = incoming?.method ?? base?.method ?? "POST";
-  headersMethodOverride(mergedHeaders, method);
+  // Removed: headersMethodOverride - X-HTTP-Method-Override header causes CORS issues
+  // Modern servers support PUT/PATCH/DELETE directly, no need for method override
 
   return {
     ...base,
@@ -254,13 +255,6 @@ function mergeRequestInit(
     method,
     headers: mergedHeaders,
   };
-}
-
-function headersMethodOverride(headers: Headers, method: string) {
-  const normalized = method?.toUpperCase();
-  if (normalized && normalized !== "GET" && normalized !== "POST") {
-    headers.set("X-HTTP-Method-Override", normalized);
-  }
 }
 
 /**

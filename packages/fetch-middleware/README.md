@@ -61,6 +61,7 @@ The library comes with several built-in middlewares. Click on each for detailed 
 - **[Format Proto Error Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/format-proto-error.md)**: Handles Protobuf and Connect error responses.
 - **[Headers Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/headers.md)**: Add or modify request headers.
 - **[Tag Session Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/tag-session.md)**: Automatically tags requests with metadata based on URL whitelist.
+- **[Session Refresh Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/session-refresh.md)**: High-level middleware for automatic session/token refresh on 401 responses with single-flight deduplication.
 
 ## Quick Start
 

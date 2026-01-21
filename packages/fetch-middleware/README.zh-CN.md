@@ -61,6 +61,7 @@ const myMiddleware: Middleware = async (req, next, ctx) => {
 - **[Format Proto Error Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/format-proto-error.md)**：处理 Protobuf 和 Connect 错误响应。
 - **[Headers Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/headers.md)**：添加或修改请求头。
 - **[Tag Session Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/tag-session.md)**：根据 URL 白名单自动为请求添加元数据标签。
+- **[Session Refresh Middleware](https://github.com/theplant/qor5-fe-infra/blob/main/packages/fetch-middleware/docs/session-refresh.md)**：高级中间件，用于在 401 响应时自动刷新会话/令牌，支持单次请求去重。
 
 ## 快速开始
 
